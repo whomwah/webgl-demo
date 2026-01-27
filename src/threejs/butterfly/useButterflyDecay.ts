@@ -49,6 +49,12 @@ export function useButterflyDecay(config: ButterflyDecayConfig = {}): ButterflyD
   const lastLogTimeRef = useRef(0);
   const autoPokeTimeoutRef = useRef<number | null>(null);
   const rampUpStartTimeRef = useRef(0);
+  const rampUpDurationRef = useRef(rampUpDuration);
+
+  // Update rampUpDuration ref when config changes
+  useEffect(() => {
+    rampUpDurationRef.current = rampUpDuration;
+  }, [rampUpDuration]);
 
   // Uniforms for shader
   const uniformsRef = useRef<ButterflyDecayUniforms>({
@@ -148,8 +154,8 @@ export function useButterflyDecay(config: ButterflyDecayConfig = {}): ButterflyD
 
     // Animate ramp-up progress
     const rampUpElapsed = uniformsRef.current.time.value - rampUpStartTimeRef.current;
-    if (rampUpElapsed < rampUpDuration) {
-      uniformsRef.current.rampUpProgress.value = Math.min(1.0, rampUpElapsed / rampUpDuration);
+    if (rampUpElapsed < rampUpDurationRef.current) {
+      uniformsRef.current.rampUpProgress.value = Math.min(1.0, rampUpElapsed / rampUpDurationRef.current);
     } else {
       uniformsRef.current.rampUpProgress.value = 1.0;
     }

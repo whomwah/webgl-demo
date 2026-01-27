@@ -24,9 +24,34 @@ export const Butterfly = forwardRef<Mesh, ButterflyProps>((props, ref) => {
   const meshRef = useRef<Mesh>(null!);
   const actualRef = ref || meshRef;
 
+  // Leva controls for decay parameters
+  const { bColour, minSpeedMultiplier, rampUpDuration } = useControls("Butterfly", {
+    bColour: {
+      value: 0.63,
+      min: 0.1,
+      max: 1.0,
+      step: 0.05,
+    },
+    minSpeedMultiplier: {
+      value: 0.1,
+      min: 0.01,
+      max: 0.5,
+      step: 0.01,
+    },
+    rampUpDuration: {
+      value: 0.3,
+      min: 0.1,
+      max: 1.0,
+      step: 0.05,
+    },
+    poke: button(() => decay.pokeButterfly()),
+  });
+
   // Use the decay hook
   const decay = useButterflyDecay({
     autoPokeDelay: props.autoPokeDelay ?? 0.5,
+    minSpeedMultiplier,
+    rampUpDuration,
   });
 
   // Component-specific uniforms (not managed by hook)
@@ -42,16 +67,6 @@ export const Butterfly = forwardRef<Mesh, ButterflyProps>((props, ref) => {
   const uniformsRef = useRef({
     ...componentUniforms.current,
     ...decay.uniforms,
-  });
-
-  const { bColour } = useControls("Butterfly", {
-    bColour: {
-      value: componentUniforms.current.colorH.value,
-      min: 0.1,
-      max: 1.0,
-      step: 0.05,
-    },
-    poke: button(() => decay.pokeButterfly()),
   });
 
   // Auto-trigger decay after 2 seconds on initial load
@@ -82,6 +97,12 @@ export const Butterfly = forwardRef<Mesh, ButterflyProps>((props, ref) => {
     componentUniforms.current.size.value = props.size;
     uniformsRef.current.size.value = props.size;
   }, [props.size]);
+
+  // Update minSpeedMultiplier uniform when control changes
+  useEffect(() => {
+    decay.uniforms.minSpeedMultiplier.value = minSpeedMultiplier;
+    uniformsRef.current.minSpeedMultiplier.value = minSpeedMultiplier;
+  }, [minSpeedMultiplier, decay.uniforms]);
 
   useFrame((_state, delta) => {
     // Update decay logic via hook
