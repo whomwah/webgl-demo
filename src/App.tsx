@@ -1,27 +1,63 @@
-import { Canvas } from '@react-three/fiber';
-import { Suspense } from 'react';
-import { Butterfly } from './threejs/butterfly';
-import './App.css'
+import { Stats, CameraShake } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+import { Butterfly } from "./threejs/butterfly";
+import { Mesh } from "three";
+import { Suspense, useRef } from "react";
+import "./App.css";
+
+import { useControls } from "leva";
+import { Bloom, EffectComposer } from "@react-three/postprocessing";
 
 function App() {
-  function Scene() {
-    return <Butterfly size={200} />;
-  }
-
   return (
-    <div className="iphone-container">
-      <h4>28x WebGl Demo</h4>
-      <Canvas
-        flat
-        gl={{ antialias: false }}
-        camera={{ position: [150, 160, 200] }}
-      >
-        <Suspense fallback={null}>
-          <Scene />
-        </Suspense>
-      </Canvas>
-    </div>
+    <Canvas
+      flat
+      gl={{ antialias: false }}
+      camera={{ position: [-135, -80, 210], rotation: [0.41, -0.5, -0.3] }}
+      style={{ width: "100vw", height: "100vh" }}
+    >
+      <Scene />
+    </Canvas>
   );
 }
 
-export default App
+function Scene() {
+  // Create ref for the butterfly
+  const butterflyRef = useRef<Mesh>(null!);
+
+  const { bgColor, bloom } = useControls({
+    bgColor: "#1d1b1b",
+    bloom: true,
+  });
+
+  return (
+    <>
+      <Stats showPanel={0} />
+      <color attach="background" args={[bgColor]} />
+      <Suspense fallback={null}>
+        <Butterfly ref={butterflyRef} size={180} />
+      </Suspense>
+      <EffectComposer>
+        {bloom ? (
+          <Bloom
+            luminanceThreshold={0.3}
+            luminanceSmoothing={0.95}
+            height={100}
+          />
+        ) : (
+          <></>
+        )}
+      </EffectComposer>
+      <CameraShake
+        maxYaw={0.03}
+        maxPitch={0.05}
+        maxRoll={0.04}
+        yawFrequency={0.1}
+        pitchFrequency={0.3}
+        rollFrequency={0.2}
+      />
+    </>
+  );
+}
+
+export default App;

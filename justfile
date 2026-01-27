@@ -16,3 +16,13 @@ lint:
 # Preview the production build
 preview:
     npm run preview
+
+# Deploy to Deno deploy
+deploy:
+    npm run build
+    npm run deploy
+
+# Deploy to Deno deploy production
+deploy-prod:
+    npm run build
+    npm run deploy-prod

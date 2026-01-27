@@ -1,37 +1,3 @@
-export const customVertexShader = /* glsl */ `
-attribute vec3 position;
-attribute vec2 uv;
-
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
-uniform float index;
-uniform float time;
-uniform float size;
-uniform float speed;
-
-varying vec3 vPosition;
-varying vec2 vUv;
-varying float vOpacity;
-
-void main() {
-  float flapTime = radians(sin(time * speed - length(position.xy) / size * 2.0 + index * 2.0) * 45.0 + 30.0);
-  float hovering = cos(time * 2.0 + index * 3.0) * size / 16.0;
-  vec3 updatePosition = vec3(
-    cos(flapTime) * position.x,
-    position.y + hovering,
-    sin(flapTime) * abs(position.x) + hovering
-  );
-
-  vPosition = position;
-  vUv = uv;
-  vOpacity = (1.0 - smoothstep(0.75, 1.0, abs((modelMatrix * vec4(updatePosition, 1.0)).z) / 900.0)) * 0.85;
-
-  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(updatePosition, 1.0);
-}
-`;
-
-export const customFragmentShader = /* glsl */ `
 precision highp float;
 
 uniform float time;
@@ -60,7 +26,7 @@ vec4 taylorInvSqrt(vec4 r) {
 }
 
 float snoise(vec3 v) {
-  const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+  const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0);
   const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
 
   vec3 i = floor(v + dot(v, C.yyy));
@@ -76,13 +42,7 @@ float snoise(vec3 v) {
   vec3 x3 = x0 - D.yyy;
 
   i = mod289(i);
-  vec4 p = permute(
-            permute(
-              permute(
-                i.z + vec4(0.0, i1.z, i2.z, 1.0)
-              ) + i.y + vec4(0.0, i1.y, i2.y, 1.0)
-            ) + i.x + vec4(0.0, i1.x, i2.x, 1.0)
-          );
+  vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
 
   float n_ = 0.142857142857; // 1.0/7.0
   vec3 ns = n_ * D.wyz - D.xzx;
@@ -111,42 +71,56 @@ float snoise(vec3 v) {
   vec3 p2 = vec3(a1.xy, h.z);
   vec3 p3 = vec3(a1.zw, h.w);
 
-  vec4 norm = taylorInvSqrt(
-                vec4(dot(p0, p0), dot(p1, p1),
-                     dot(p2, p2), dot(p3, p3))
-              );
+  vec4 norm = taylorInvSqrt(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));
   p0 *= norm.x;
   p1 *= norm.y;
   p2 *= norm.z;
   p3 *= norm.w;
 
   vec4 m = max(0.6 -
-         vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)),
-         0.0);
+    vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)), 0.0);
   m = m * m;
-  return 42.0 * dot(
-                   m * m,
-                   vec4(dot(p0, x0), dot(p1, x1),
-                        dot(p2, x2), dot(p3, x3))
-                 );
+  return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
 }
 
 vec3 convertHsvToRgb(vec3 c) {
-  vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
+  vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
   vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
   return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
+// Creates a radial wave pattern from center
+float radialWave(vec2 pos, float frequency, float amplitude, float phase) {
+  // Calculate distance from center (0,0) in UV space
+  vec2 center = vec2(0.5, 0.5);
+  float dist = distance(pos, center);
+
+  // Create waves that move outward with time
+  return amplitude * sin(dist * frequency - phase);
+}
+
 void main() {
   vec4 texColor = texture2D(texture, vUv);
+
+  // Create radial waves that pulse outward
+  float waveFreq = 10.0;
+  float waveSpeed = 5.0;
+  float wavePhase = time * waveSpeed;
+  float wave = radialWave(vUv, waveFreq, 0.5, wavePhase);
+
+  // Combine traditional noise with radial wave pattern
   float noise = snoise(vPosition / vec3(size * 0.25) +
-                        vec3(0.0, 0.0, time));
-  vec3 hsv = vec3(colorH + noise * 0.2, 0.4, 1.0);
+    vec3(0.0, 0.0, time)) + wave * 0.3;
+
+  // Let waves affect the color
+  vec3 hsv = vec3(colorH + noise * 0.2, 0.4 + wave * 0.1, 1.0 + wave * 0.1);
   vec3 rgb = convertHsvToRgb(hsv);
 
-  if (texColor.a < 0.5)
+  // Add subtle intensity variation with waves
+  float intensity = 1.0 + wave * 0.15;
+
+  if(texColor.a < 0.5)
     discard;
 
-  gl_FragColor = vec4(rgb, vOpacity) * texColor;
+  gl_FragColor = vec4(rgb * intensity, vOpacity) * texColor;
 }
-`;
