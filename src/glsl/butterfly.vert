@@ -53,11 +53,8 @@ void main() {
   // Convert to radians for trig functions
   float flapTime = radians(flapAngle);
 
-  // Decay completion check
-  float isDecayComplete = step(decayFactor, 0.01);
-
-  // Hovering motion with smooth stop
-  float hoverScale = decayFactor * (1.0 - isDecayComplete);
+  // Hovering motion scales with decay factor (continuous, no hard cutoff)
+  float hoverScale = decayFactor;
   float hovering = cos(time * 2.0 + index * 3.0) * size / 32.0 * hoverScale;
 
   // Final vertex position

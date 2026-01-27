@@ -136,14 +136,15 @@ export function useButterflyDecay(config: ButterflyDecayConfig = {}): ButterflyD
    * Update frame - called from useFrame
    */
   const updateFrame = (delta: number) => {
+    // Always increment time - wings never fully stop
+    uniformsRef.current.time.value += delta;
+
     const elapsedTime =
       uniformsRef.current.time.value - uniformsRef.current.decayStart.value;
-    const fullyDecayed = elapsedTime > 10 / decayRate && decayTriggered;
-
-    // Only increment time when not fully decayed
-    if (!fullyDecayed) {
-      uniformsRef.current.time.value += delta;
-    }
+    
+    // Check if decay has reached threshold (near minimum speed)
+    const decayThreshold = 10 / decayRate;
+    const nearMinimumSpeed = elapsedTime > decayThreshold && decayTriggered;
 
     // Animate ramp-up progress
     const rampUpElapsed = uniformsRef.current.time.value - rampUpStartTimeRef.current;
@@ -153,15 +154,15 @@ export function useButterflyDecay(config: ButterflyDecayConfig = {}): ButterflyD
       uniformsRef.current.rampUpProgress.value = 1.0;
     }
 
-    // Check if butterfly just entered fully decayed state
-    if (fullyDecayed && !wasFullyDecayed) {
+    // Schedule auto-poke when butterfly reaches minimum speed
+    if (nearMinimumSpeed && !wasFullyDecayed) {
       setWasFullyDecayed(true);
       console.log(
         `[Decay Complete] Time: ${uniformsRef.current.time.value.toFixed(2)}, TimeBase: ${timeBaseRef.current.toFixed(2)}`,
       );
       scheduleAutoPoke();
-    } else if (!fullyDecayed && wasFullyDecayed) {
-      // Reset the fully decayed state tracking
+    } else if (!nearMinimumSpeed && wasFullyDecayed) {
+      // Reset the state tracking when butterfly becomes active again
       setWasFullyDecayed(false);
       // Clear any scheduled auto-poke when butterfly is active again
       if (autoPokeTimeoutRef.current) {
