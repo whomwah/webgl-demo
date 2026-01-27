@@ -13,6 +13,7 @@ uniform float wingFlapAng; // Minimum wing flap angle
 uniform float decayStart;  // Time when decay starts
 uniform float decayRate;   // Rate of flapping decay (0-1)
 uniform float restAngle;   // Final rest angle after decay
+uniform float minSpeedMultiplier; // Minimum speed as fraction of full speed
 
 // Values passed to fragment shader
 varying vec3 vPosition;
@@ -27,8 +28,8 @@ void main() {
   // Calculate elapsed time since decay trigger
   float elapsedTime = max(0.0, time - decayStart);
 
-  // Standard decay factor (1.0 → 0.0)
-  float decayFactor = exp(-decayRate * elapsedTime);
+  // Decay factor with minimum speed floor (never drops below minSpeedMultiplier)
+  float decayFactor = minSpeedMultiplier + (1.0 - minSpeedMultiplier) * exp(-decayRate * elapsedTime);
 
   // Apply decay directly without the angle check
   // This eliminates the glitches from conditional decay
