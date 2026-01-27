@@ -14,6 +14,7 @@ uniform float decayStart;  // Time when decay starts
 uniform float decayRate;   // Rate of flapping decay (0-1)
 uniform float restAngle;   // Final rest angle after decay
 uniform float minSpeedMultiplier; // Minimum speed as fraction of full speed
+uniform float rampUpProgress; // Ramp-up progress (0.0 to 1.0)
 
 // Values passed to fragment shader
 varying vec3 vPosition;
@@ -31,9 +32,11 @@ void main() {
   // Decay factor with minimum speed floor (never drops below minSpeedMultiplier)
   float decayFactor = minSpeedMultiplier + (1.0 - minSpeedMultiplier) * exp(-decayRate * elapsedTime);
 
-  // Apply decay directly without the angle check
-  // This eliminates the glitches from conditional decay
-  float currentSpeed = speed * decayFactor;
+  // Apply smoothstep easing to ramp-up progress for smooth acceleration
+  float rampUpEase = smoothstep(0.0, 1.0, rampUpProgress);
+
+  // Apply decay and ramp-up to speed
+  float currentSpeed = speed * decayFactor * rampUpEase;
 
   // Wing oscillation with smooth decay
   float flapPhase = time * currentSpeed + index * 2.0;
