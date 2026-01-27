@@ -16,6 +16,8 @@ interface ButterflyDecayUniforms {
   wingFlapAng: { type: string; value: number };
   decayStart: { type: string; value: number };
   decayRate: { type: string; value: number };
+  minSpeedMultiplier: { type: string; value: number };
+  rampUpProgress: { type: string; value: number };
 }
 
 export interface ButterflyDecayReturn {
@@ -32,9 +34,8 @@ export interface ButterflyDecayReturn {
 export function useButterflyDecay(config: ButterflyDecayConfig = {}): ButterflyDecayReturn {
   const {
     autoPokeDelay = 0.5,
-    // TODO: minSpeedMultiplier and rampUpDuration will be used in tasks 2-4
-    // minSpeedMultiplier = 0.1,
-    // rampUpDuration = 0.3,
+    minSpeedMultiplier = 0.1,
+    rampUpDuration = 0.3,
     decayRate = 0.2,
   } = config;
 
@@ -47,6 +48,7 @@ export function useButterflyDecay(config: ButterflyDecayConfig = {}): ButterflyD
   const debugCounterRef = useRef(0);
   const lastLogTimeRef = useRef(0);
   const autoPokeTimeoutRef = useRef<number | null>(null);
+  const rampUpStartTimeRef = useRef(0);
 
   // Uniforms for shader
   const uniformsRef = useRef<ButterflyDecayUniforms>({
@@ -55,6 +57,8 @@ export function useButterflyDecay(config: ButterflyDecayConfig = {}): ButterflyD
     wingFlapAng: { type: "f", value: 5.0 },
     decayStart: { type: "f", value: 9999999 },
     decayRate: { type: "f", value: decayRate },
+    minSpeedMultiplier: { type: "f", value: minSpeedMultiplier },
+    rampUpProgress: { type: "f", value: 1.0 },
   });
 
   /**
@@ -85,6 +89,10 @@ export function useButterflyDecay(config: ButterflyDecayConfig = {}): ButterflyD
     // Then trigger new decay
     setDecayTriggered(true);
     uniformsRef.current.decayStart.value = uniformsRef.current.time.value;
+
+    // Reset ramp-up progress and start time
+    uniformsRef.current.rampUpProgress.value = 0.0;
+    rampUpStartTimeRef.current = uniformsRef.current.time.value;
   };
 
   /**
@@ -137,6 +145,14 @@ export function useButterflyDecay(config: ButterflyDecayConfig = {}): ButterflyD
       uniformsRef.current.time.value += delta;
     }
 
+    // Animate ramp-up progress
+    const rampUpElapsed = uniformsRef.current.time.value - rampUpStartTimeRef.current;
+    if (rampUpElapsed < rampUpDuration) {
+      uniformsRef.current.rampUpProgress.value = Math.min(1.0, rampUpElapsed / rampUpDuration);
+    } else {
+      uniformsRef.current.rampUpProgress.value = 1.0;
+    }
+
     // Check if butterfly just entered fully decayed state
     if (fullyDecayed && !wasFullyDecayed) {
       setWasFullyDecayed(true);
@@ -159,7 +175,7 @@ export function useButterflyDecay(config: ButterflyDecayConfig = {}): ButterflyD
     if (now - lastLogTimeRef.current > 1000) {
       lastLogTimeRef.current = now;
       console.log(
-        `[Status] Time: ${uniformsRef.current.time.value.toFixed(2)}, Speed: ${uniformsRef.current.speed.value.toFixed(2)}, Decaying: ${decayTriggered}, ElapsedTime: ${elapsedTime.toFixed(2)}`,
+        `[Status] Time: ${uniformsRef.current.time.value.toFixed(2)}, Speed: ${uniformsRef.current.speed.value.toFixed(2)}, Decaying: ${decayTriggered}, ElapsedTime: ${elapsedTime.toFixed(2)}, RampUp: ${uniformsRef.current.rampUpProgress.value.toFixed(2)}`,
       );
     }
   };
