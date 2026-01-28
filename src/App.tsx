@@ -5,7 +5,6 @@ import { Mesh } from "three";
 import { Suspense, useRef } from "react";
 import "./App.css";
 
-import { useControls } from "leva";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 
 function App() {
@@ -21,32 +20,25 @@ function App() {
   );
 }
 
+const BG_COLOR = "#333333";
+
 function Scene() {
   // Create ref for the butterfly
   const butterflyRef = useRef<Mesh>(null!);
 
-  const { bgColor, bloom } = useControls({
-    bgColor: "#333333",
-    bloom: true,
-  });
-
   return (
     <>
       <Stats showPanel={0} />
-      <color attach="background" args={[bgColor]} />
+      <color attach="background" args={[BG_COLOR]} />
       <Suspense fallback={null}>
         <Butterfly ref={butterflyRef} size={180} />
       </Suspense>
       <EffectComposer>
-        {bloom ? (
-          <Bloom
-            luminanceThreshold={0.3}
-            luminanceSmoothing={0.95}
-            height={100}
-          />
-        ) : (
-          <></>
-        )}
+        <Bloom
+          luminanceThreshold={0.3}
+          luminanceSmoothing={0.95}
+          height={100}
+        />
       </EffectComposer>
       <CameraShake
         maxYaw={0.03}

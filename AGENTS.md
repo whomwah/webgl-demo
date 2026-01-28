@@ -4,7 +4,7 @@
 
 React Three Fiber WebGL demo with animated butterfly using shader-based wing flapping.
 
-**Tech Stack:** React 19, TypeScript (strict), R3F + Drei + Postprocessing, Three.js, GLSL shaders, Vite 6.2, Leva
+**Tech Stack:** React 19, TypeScript (strict), R3F + Drei + Postprocessing, Three.js, GLSL shaders, Vite 6.2
 
 ## Build/Lint/Test Commands
 
@@ -59,7 +59,6 @@ Butterfly.displayName = "Butterfly";  // Required for forwardRef
 ```typescript
 useFrame((_state, delta) => { uniformsRef.current.time.value += delta; });
 const texture = useLoader(TextureLoader, path) as Texture;
-const { val } = useControls("Group", { val: { value: 0.5, min: 0, max: 1 } });
 ```
 
 ### Error Handling
@@ -82,4 +81,4 @@ public/textures/  # Runtime textures
 ```
 
 ## Key Dependencies
-`@react-three/fiber`, `@react-three/drei`, `@react-three/postprocessing`, `leva`, `three`, `vite-plugin-glsl`
+`@react-three/fiber`, `@react-three/drei`, `@react-three/postprocessing`, `three`, `vite-plugin-glsl`
