@@ -1,18 +1,18 @@
 attribute vec3 position; // Vertex position in 3D space
-attribute vec2 uv;       // Texture coordinates
+attribute vec2 uv; // Texture coordinates
 
 // Standard matrices for 3D transformations
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
-uniform float index;      // Butterfly instance identifier
-uniform float time;       // Animation time
-uniform float size;       // Butterfly size scaling
-uniform float speed;      // Animation speed
+uniform float index; // Butterfly instance identifier
+uniform float time; // Animation time
+uniform float size; // Butterfly size scaling
+uniform float speed; // Animation speed
 uniform float wingFlapAng; // Minimum wing flap angle
-uniform float decayStart;  // Time when decay starts
-uniform float decayRate;   // Rate of flapping decay (0-1)
-uniform float restAngle;   // Final rest angle after decay
+uniform float decayStart; // Time when decay starts
+uniform float decayRate; // Rate of flapping decay (0-1)
+uniform float restAngle; // Final rest angle after decay
 uniform float minSpeedMultiplier; // Minimum speed as fraction of full speed
 uniform float rampUpProgress; // Ramp-up progress (0.0 to 1.0)
 
@@ -63,8 +63,8 @@ void main() {
   // Pass values to fragment shader
   vPosition = position;
   vUv = uv;
-  vOpacity = (1.0 - smoothstep(0.75, 1.0, abs((modelMatrix * vec4(updatePosition, 1.0)).z) / 900.0)) * 0.85;
+  vOpacity = 1.0 - smoothstep(0.75, 1.0, abs((modelMatrix * vec4(updatePosition, 1.0)).z) / 900.0);
 
   gl_Position = projectionMatrix * viewMatrix * modelMatrix *
-    vec4(updatePosition, 1.0);
+      vec4(updatePosition, 1.0);
 }
