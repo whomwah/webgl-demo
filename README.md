@@ -1,6 +1,10 @@
 # WebGL Butterfly Demo
 
-An interactive 3D butterfly animation built with React Three Fiber, featuring shader-based wing flapping and post-processing effects.
+[![Deno Deploy](https://img.shields.io/badge/Deno%20Deploy-000000?style=flat&logo=deno&logoColor=white)](https://webgl-demo.deno.dev/)
+
+A 3D butterfly animation built with React Three Fiber, featuring shader-based wing flapping and post-processing effects.
+
+![3D Butterfly](./assets/demo.png)
 
 ## Features
 
