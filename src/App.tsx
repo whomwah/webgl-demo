@@ -26,7 +26,7 @@ function Scene() {
   const butterflyRef = useRef<Mesh>(null!);
 
   const { bgColor, bloom } = useControls({
-    bgColor: "#1d1b1b",
+    bgColor: "#333333",
     bloom: true,
   });
 

@@ -25,27 +25,30 @@ export const Butterfly = forwardRef<Mesh, ButterflyProps>((props, ref) => {
   const actualRef = ref || meshRef;
 
   // Leva controls for decay parameters
-  const { bColour, minSpeedMultiplier, rampUpDuration } = useControls("Butterfly", {
-    bColour: {
-      value: 0.63,
-      min: 0.1,
-      max: 1.0,
-      step: 0.05,
+  const { bColour, minSpeedMultiplier, rampUpDuration } = useControls(
+    "Butterfly",
+    {
+      bColour: {
+        value: 0.63,
+        min: 0.1,
+        max: 1.0,
+        step: 0.05,
+      },
+      minSpeedMultiplier: {
+        value: 0.3,
+        min: 0.01,
+        max: 0.5,
+        step: 0.01,
+      },
+      rampUpDuration: {
+        value: 0.3,
+        min: 0.1,
+        max: 1.0,
+        step: 0.05,
+      },
+      poke: button(() => decay.pokeButterfly()),
     },
-    minSpeedMultiplier: {
-      value: 0.1,
-      min: 0.01,
-      max: 0.5,
-      step: 0.01,
-    },
-    rampUpDuration: {
-      value: 0.3,
-      min: 0.1,
-      max: 1.0,
-      step: 0.05,
-    },
-    poke: button(() => decay.pokeButterfly()),
-  });
+  );
 
   // Use the decay hook
   const decay = useButterflyDecay({

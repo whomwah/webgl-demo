@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 
 // Constants
-const WING_SPEED = 30.0;
+const WING_SPEED = 20.0;
 
 interface ButterflyDecayConfig {
   autoPokeDelay?: number; // Base delay before auto-poke in seconds
