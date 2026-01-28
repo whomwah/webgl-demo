@@ -1,6 +1,7 @@
 import { Stats, CameraShake } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Butterfly } from "./threejs/butterfly";
+import { GradientBackground } from "./threejs/GradientBackground";
 import { Mesh } from "three";
 import { Suspense, useRef } from "react";
 import "./App.css";
@@ -20,8 +21,6 @@ function App() {
   );
 }
 
-const BG_COLOR = "#333333";
-
 function Scene() {
   // Create ref for the butterfly
   const butterflyRef = useRef<Mesh>(null!);
@@ -29,7 +28,7 @@ function Scene() {
   return (
     <>
       <Stats showPanel={0} />
-      <color attach="background" args={[BG_COLOR]} />
+      <GradientBackground />
       <Suspense fallback={null}>
         <Butterfly ref={butterflyRef} size={180} />
       </Suspense>
